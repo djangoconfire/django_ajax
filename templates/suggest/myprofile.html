@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block center_block %}
+    {% if request.user.is_authenticated %}
+        <h1>Welcome {{request.user.username}}<h1>
+    {% else %}
+        <h1> Problem while logging in </h1>
+    {% endif %}
+{% endblock %}

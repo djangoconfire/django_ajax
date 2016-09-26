@@ -1,0 +1,15 @@
+{%extends "base.html"%}
+
+{%block center_block%}
+    <h2>
+        <center>Bad Request</center>
+    </h2>
+    <h4 style = "text-align:center">{{error}}</h4>
+        {% if message %}
+            <h4 style = 'text-align:center'>{{ message }}</h4>
+        {% endif %}
+        <center>
+            <img src = "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRN2VaBKP4CJ7j-SkmnKQX_HZrLdQLf_v8W59yohE9L2eLIUjKp">
+        </center>
+    <div style = "height:300px"></div>
+{%endblock%}

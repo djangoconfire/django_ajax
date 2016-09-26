@@ -1,0 +1,217 @@
+{# This template inherits from base.html #}
+{% extends "base.html" %}
+
+{# custom filters and tags are defined in suggest_extras #}
+{% load suggest_extras %}
+{% load staticfiles %}
+{% block main_base %}
+<div class='container-fixed'>
+    <div class='row'>
+        <div class='col-sm-12'>
+            <nav class="navbar navbar-inverse">
+                <ul class='nav nav-tabs nav-justified'>
+                    <li>
+                        <a href="{% url 'suggest:home' %}" id="trendinglink">Trending</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'suggest:latest' %}" id="latestlink">Latest</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'suggest:category_home' %}" id="categorieslink">Categories</a>
+                    </li>
+                    <li> 
+                        <a href="{% url 'suggest:tag_home' %}" id="tag">Tags</a>
+                    </li>
+                    {% if user != None %}
+                        <li > 
+                            <a href="{% url 'suggest:myposts' user.username %}">MyPosts</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container-fixed">
+    <div class="row">
+        <div class='col-sm-3'>
+        </div>
+        <div class='col-sm-6'>
+            <h3> Posts associated with the category <b>{{ categoryName }}</b> </h3>
+        </div>
+        <div class='col-sm-3'>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block title %}
+Suggest | Analytics Vidhya | Category {{ categoryName }}
+{% endblock title %} 
+
+{% block links %}
+<link href="{% static 'css/home.css' %}" rel="stylesheet">
+{% endblock links %}
+{% block center_block %}
+<div class='container-fixed'>
+    <div class='row'>
+        <div class='col-sm-10'>
+            <div class='container-fixed'>
+                {% if posts_under_category %}
+                <div>
+                    {% for post in posts_under_category %}
+                        {% if post.is_published == True %}
+                        <hr style="padding:2px; margin:1px;">
+                        <div class='container-fixed'>
+                            <div class='row'>
+                                <div class="col-sm-2">
+                                    <div class="col-sm-3">
+                                    <div class="imgContainer">
+                                        <div class='row'>
+                                            <div class='col-sm-1'>
+                                                {% if vote_list|index:forloop.counter0  == 1 %}
+                                                <i class="fa fa-chevron-circle-up" aria-hidden="true"></i>
+                                                {% else %}
+                                                <i class="fa fa-chevron-up" aria-hidden="true"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div class='col-sm-11' id='forfomatting'>
+                                            </div>
+                                        </div>
+                                        <div class='row'>
+                                            <div class='col-sm-1'>
+                                                {{ post.numUpVotes }}
+                                            </div>
+                                            <div class='col-sm-11' id='forformatting'>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="imgContainer">
+                                        <div class='row'>
+                                            <div class='col-sm-1'>
+                                            {% if vote_list|index:forloop.counter0 == -1 %}
+                                                <i class="fa fa-chevron-circle-down" aria-hidden="true"></i>
+                                            {% else %}
+                                            <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                                            {% endif %}
+                                            </div>
+                                            <div class='col-sm-11' id='forfomatting'>
+                                            </div>
+                                        </div>
+                                        <div class='row'>
+                                            <div class='col-sm-1'>
+                                                {{ post.numDownVotes }}
+                                            </div>
+                                            <div class='col-sm-11' id='forformatting'>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                    <div class="col-sm-6" id="forformatting">
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <div class="imgContainer">
+                                            {% if post.is_closed == True %}
+                                            <img src="{% static 'images/lock-2.png' %}" id="lock" alt="Closed"></img>
+                                            {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div id="questiontitle"> 
+                                        <a href="{% url 'suggest:post' post.slug %}"><h4 style="color:'#0077b3'"> <b> {{ post.post_title }} </b> </h4></a>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-1">
+                                {% if post.posted_anonymously == False %}
+                                    {% if post.user.profile_image %}
+                                    <img class="img-circle" id ='userimage' src="{{ post.user.profile_image.url">
+                                    {% else %}
+                                    <h1 style="margin:0px;background-color:{{ post.user.imagecolor }};padding-top:5px;color:white;height:40px;width:40px;border-radius:20px;font-size:26px;text-align:center;"><b>{{post.user.username|slice:"1" |upper}}<b></h1>
+                                    {% endif %}
+                                {% else %}
+                                
+                                <img class="img-circle" src="/media/images/anonymous.png" id="anonymousimage" alt="Anonymous">
+                                {% endif %}
+                                </div>
+                                <!-- <div class='clearfix visible-sm-block'> -->
+                                <div class="col-sm-2">
+                                    <div style="border:1px solid black; border-radius:15px;" >
+                                        <center>
+                                            {% if post.get_time_diff.days != 0 %}
+                                                {% if post.get_time_diff.days == 1 %}
+                                                    <h6> Posted 1 day ago </h6>
+                                                {% else %}
+                                                    <h6> Posted {{ post.get_time_diff.days }} days ago</h6>
+                                                {% endif %}
+                                            {% else %}
+                                                <h6> Posted {{post.get_time_diff.seconds | findtimediff}} ago</h6>
+                                            {% endif %}
+                                        </center>
+                                    </div>
+                               </div>
+
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-8 col-sm-offset-0 col-xs-offset-3 col-xs-9'>
+                                    <ul class='list-unstyled list-inline'>
+                                        <li>
+                                            <strong lass='text-center'>
+                                                {% if post.tags.count == 0 %}
+                                                    No Tags
+                                                {% elif post.tags.count == 1 %}
+                                                    Tag:
+                                                {% else %}
+                                                    Tags:
+                                                {% endif %}
+                                            </strong>
+                                        </li>
+                                        {% for tag in post.tags.values %}
+                                        <li>
+                                            <a href="{% url 'suggest:tag' tag.slug %}">
+                                                <button class='btn btn-default btn-xs'>{{ tag.name }}</button>
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class='col-sm-4 col-sm-offset-0 col-xs-offset-3 cols-xs-9'>
+                                    <ul class="list-unstyled list-inline">
+                                        <li>
+                                            <strong class='text-center'>Category:</strong>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'suggest:category' post.post_type %}">
+                                            <button class='btn btn-default btn-xs pagination-centered' style="background-color:{{ post.post_type|getcolor }};color:white; border-radius:10px;">{{ post.category }}</button>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>     
+                        </div>
+
+                            {% if forloop.last %}
+                            <hr>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% else %} 
+
+                <div>
+                    <p> No posts yet </p>
+                </div>
+
+                {% endif %}
+            </div>
+        </div>
+        <div class='col-sm-2'>
+        </div>
+    </div>
+</div>
+{% endblock center_block %}

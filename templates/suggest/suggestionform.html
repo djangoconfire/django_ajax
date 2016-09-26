@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block head_block %}
+    <!-- For including the TinyMCE text editor media  -->
+    {{ postform.media }}
+{% endblock head_block %}
+
+
+{% block main_base %}
+<script src = "{% static 'js/jquery.min.js' %}" type = "text/javascript"></script>
+<link href="{% static 'jquery-autosuggest/css/autoSuggest-grappelli.css' %}" type="text/css" media="all" rel="stylesheet" />
+<script type="text/javascript" src="{% static 'jquery-autosuggest/js/jquery.autoSuggest.minified.js' %}"> </script>
+
+{% comment %}
+<!-- TinyMCE javascript files -->
+<script type="text/javascript" src="{% static 'js/tinymce/tinymce.min.js' %}"></script>
+<!-- TinyMCE initialization js for the configuration named 'tinymce' This allows 
+to generate multiple tinyMCE configurations to be used on different pages-->
+<script type="text/javascript" src="{% url 'tinymce-js' 'tinymce' %}"></script>
+
+
+<!-- Configuring the language for tinyMCE text editor -->
+
+<!-- <script type="text/javascript" src="{% url 'tinymce-js-lang' 'tinymce','en' %}"></script> -->
+{% endcomment %}
+<script type='text/javascript'>
+var post_slug = "{{ post.slug|escapejs }}";
+
+function managepostformsubmission(form_id)
+{
+    return function(event)
+    {
+        event.preventDefault();
+        var formarray = $(form_id).serializeArray();
+        var formData = JSON.stringify(formarray)
+
+        // For debugging
+        alert(formData);
+        $.post('/ajax/createpost/',{formData:formData},function(response){
+            var jsondata = response;
+            if(typeof jsondata == 'object')
+            {
+                if(jsondata['success']=='True')
+                {
+                    var slug_of_post = jsondata['post_slug']
+                    window.location.href = '/suggest/posts/'+slug_of_post+'/';
+                }
+                else if(jsondata['success'] == 'False')
+                {
+                    alert("The post has not been created.");
+                    alert(jsondata['exception']);
+                }
+                else
+                {
+                    alert("The returned json object has not success attribute.");
+                }
+            }
+            else
+            {
+                alert("The returned object is not Json");
+            }
+        });
+    }
+}
+
+function managepostupdation(form_id)
+{
+    return function(event)
+    {
+        event.preventDefault();
+        var formarray = $(form_id).serializeArray();
+        var formData = JSON.stringify(formarray);
+
+        // //For debugging
+        // alert(formData);
+        $.post('/ajax/updatepost/',{formData:formData,post_slug:post_slug},function(response)
+        {   
+            var jsondata = response;
+            if(typeof jsondata == 'object')
+            {
+                if(jsondata['success']=='True')
+                {
+                    var slug_of_post = jsondata['post_slug']
+                    window.location.href = '/suggest/posts/'+slug_of_post+'/';
+                }
+                else if(jsondata['success'] == 'False')
+                {
+                    alert("The post has not been updated successfully.");
+                }
+                else
+                {
+                    alert("The returned json object has not success attribute.");
+                }
+            }
+            else
+            {
+                alert("The returned object is not Json");
+            }
+        });
+    }
+}
+
+$(document).ready(function(){
+
+    tinyMCE.init({
+        mode:'textareas',
+    });
+    //Check if the elements with the given id's exist 
+    if($('#suggestionform').length > 0)
+    {
+        $('#suggestionform').submit(managepostformsubmission('#suggestionform'));
+    }
+    else if($('#suggestionupdateform').length > 0)
+    {
+        $('#suggestionupdateform').submit(managepostupdation('#suggestionupdateform'));
+    }
+    else
+    {
+        alert("The form id doesn't exist.Some error occured.Please report the error at suggestfeedback@analyticsvidhya.com . Thank You");
+    }
+});
+
+</script>
+<div class='container-fixed'>
+    <div class='row'>
+        <div class='col-sm-12'>
+            <nav class="navbar navbar-inverse">
+                <ul class='nav nav-tabs nav-justified'>
+                    <li role='presentation'>
+                        <a href="{% url 'suggest:home' %}" id="trendinglink">Trending</a>
+                    </li>
+                    <li role='presentation'>
+                        <a href="{% url 'suggest:latest' %}" id="latestlink">Latest</a>
+                    </li>
+                    <li role='presentation'>
+                        <a href="{% url 'suggest:category_home' %}" id="categorieslink">Categories</a>
+                    </li>
+                    <li role='presentation'> 
+                        <a href="{% url 'suggest:tag_home' %}" id="tag">Tags</a>
+                    </li>
+                    {% if user != None %}
+                        <li role='presentation'> 
+                            <a href="{% url 'suggest:myposts' user.username %}">MyPosts</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container-fixed">
+    <div class="row">
+        {% if user != None %}
+        <div class='col-sm-3' style = 'float:left'> 
+            <a href="{% url 'suggest:logout_view' %}">
+                <button class='btn btn-danger'>Logout</button>
+            </a>    
+        </div>
+        <div class='col-sm-6'>
+            {% if post == None %}
+                <h1> Add a new suggestion or request for article. </h1>
+            {% else %}
+                <h1>Update your post</h1>
+            {% endif %}
+        </div>
+        <div class='col-sm-3'>
+        </div>
+        {% else %}
+        <div class='col-sm-3' style = 'float:center'>   
+        </div>
+        <div class='col-sm-6'>
+            <h1> Please Login to add or update a suggestion </h1>
+        </div>
+        <div class='col-sm-3'>
+                <a href="{% url 'suggest:login' %}">
+                <button class='btn btn-Success'>Login</button>
+                </a>    
+        </div>
+
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block center_block %}
+{% if user != None %}
+<div class='container-fixed'>
+    <div class='row'>
+        <div class='col-sm-2'>
+        </div>
+        <div class='col-sm-8'>
+            {% if post == None %}
+                <form class="form-horizontal" name="SuggestionForm" method='post' id='suggestionform'>
+            {% else %}
+                <form class="form-horizontal" name="SuggestionForm" method='post' id='suggestionupdateform'>
+            {% endif %}
+                {% csrf_token %}
+                <table>
+                    {{ postform.as_table }}
+                </table>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-success">{% if post == None %}Post{% else %}Update{% endif %}</button>
+                    </div>
+                </div>    
+            </form>
+        </div>
+        <div class='col-sm-2'>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,1861 @@
+{# This template inherits from base.html #}
+{% extends "base.html" %}
+
+{# custom filters and tags are defined in suggest_extras #}
+{% load suggest_extras %}
+{% load staticfiles %}
+
+{% block main_base %}
+<div class='container-fixed'>
+    <div class='row'>
+        <div class='col-sm-12'>
+            <nav class="navbar navbar-default">
+                <ul class='nav nav-tabs nav-justified'>
+                    <li>
+                        <a href="{% url 'suggest:home' %}" id="trendinglink">Trending</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'suggest:latest' %}" id="latestlink">Latest</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'suggest:category_home' %}" id="categorieslink">Categories</a>
+                    </li>
+                    <li> 
+                        <a href="{% url 'suggest:tag_home' %}" id="tag">Tags</a>
+                    </li>
+                    {% if user != None %}
+                        <li > 
+                            <a href="{% url 'suggest:myposts' user.username %}">MyPosts</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block title %}
+Suggest | Analytics Vidhya
+{% endblock title %} 
+
+{% block links %}
+<link href="/static/css/home.css" rel="stylesheet">
+
+<link rel='stylesheet' href="{% static 'css/post.css'%}" type='text/css'>
+<link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}" type='text/css'>
+{% endblock links %}
+{% block center_block %}
+    <div class="container-fluid" role="main">
+        <div class="row-fluid clearfix">
+            <div class="col-md-10">
+                <div class="container">
+                    <div class="post-details">
+                        <div class="row">
+                            <div class="col-sm-12 post-header">
+                                <h1 class="post-title">
+                                    {{ post.post_title }}
+                                </h1>
+                                <div class="text-muted" display="inline-block">
+                                    <small>
+                                        <i class="fa fa-user"></i> 
+                                        {% if post.posted_anonymously %}
+                                        <b> anonymous </b>
+                                        {% else %}
+                                        <b> 
+                                            <a href="{% url 'suggest:userposts' post.user.username %}" class="text-muted">
+                                                {{ post.user.username }}
+                                            </a>
+                                        </b>
+                                        {% endif %}
+                                        |&nbsp;
+                                        <i class="fa fa-calendar"></i> 
+                                        <b>
+                                            <time datetime="{{ post.pub_date }}" title="Posted On">
+                                            {% if post.get_time_diff.days != 0 %}
+                                                {% if post.get_time_diff.days == 1 %}
+                                                    <mdall> Posted 1 day ago </mdall>
+                                                {% else %}
+                                                    <mdall> Posted {{ post.get_time_diff.days }} days ago</mdall>
+                                                {% endif %}
+                                            {% else %}
+                                                <mdall> Posted {{post.get_time_diff.seconds|findtimediff}} ago</mdall>
+                                            {% endif %}
+                                            </time>
+                                        </b>
+                                    </small>
+                                    {% if user != None %}
+                                        {% if user.pk == post.user.pk %}
+                                            {% if post.is_closed %}
+                                                <button id='openpost' class='btn btn-xs btn-success'>Open</button>
+                                                <button id='closepost' class='btn btn-xs btn-danger' style='display:none;'>Close</button>
+                                            {% else %}
+                                                <button id='openpost' class='btn btn-xs btn-success' style='display:none;'>Open</button>
+                                                <button id='closepost' class='btn btn-xs btn-danger'>Close</button>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% if post.is_closed == False %}
+                                            <button id='flagpost' class='btn btn-xs btn-warning'>Flag</button>
+                                        {% else %}
+                                            <button id='flagpost' class='btn btn-xs btn-warning' style='display:none'>Flag</button>
+                                        {% endif %}
+                                        <button class='btn btn-danger btn-xs' id='cancel-post-flag' style='display:none'>Cancel Flagging</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm-offset-3 col-sm-6' id='flagform-div' style='display:none'>
+                                <center>
+                                    <form id='postflag-form'>
+                                        <table>
+                                            {{ post_flag_form.as_table }}
+                                        </table>
+                                        <button type='submit' class='btn btn-warning btn-xs'>Submit</button>    
+                                    </form>
+                                </center>
+                            </div>
+                        </div>
+
+                        <hr class="hr-mini">
+
+                        <div class="row proposal-description">
+        
+                             <div class="col-sm-1 section--voting ">
+                                <div class="text-center">
+                                    <div id="upvoteclick">
+                                        <span>
+                                        {% ifequal thisUserUpVote 0 %}
+                                            <i class="fa fa-chevron-up text-muted vote-up fa-2x" id="upvoteicon" title="Vote this post UP. (Click again to undo)" aria-hidden="true" ></i>  
+                                        {% else %}
+                                            <i class="fa fa-chevron-up vote-up fa-2x" id="upvoteicon" title="Vote this post UP. (Click again to undo)" aria-hidden="true"></i>
+                                        {% endifequal %}
+                                        </span>
+                                    </div>
+                                    
+                                    
+                                    <h1 class="clear-margin text-muted vote-count" id="numOfVotes">
+                                        {% with post.numDownVotes as downvotes %}
+                                            {{ post.numUpVotes|subtract:downvotes }}
+                                        {% endwith %}
+                                    </h1>
+                                    <div class="text-muted">Votes</div>
+                                    
+
+                                    <div id="downvoteclick">
+                                        <span>
+                                            {% ifequal thisUserDownVote 0 %}
+                                                <i class="fa fa-chevron-down text-muted vote-down fa-2x" id="downvoteicon" title="Vote this post DOWN. (Click again to undo)" aria-hidden="true" ></i>
+                                            {% else %}
+                                                <i class="fa fa-chevron-down vote-down fa-2x" id="downvoteicon" title="Vote this post DOWN. (Click again to undo)" aria-hidden="true"></i>
+                                            {% endifequal %}
+                                        </span>
+                                    </div>
+                                    
+
+
+                                </div>
+                            </div>
+                            <section class="col-sm-8 post-writeup">
+                                <div class="proposal-writeup--section">
+                                    <h4 class='heading'><b>Description:</b></h4>
+                                    <p>{{ post.text }}</p>
+                                </div>
+                            </section>
+                            <section class="col-sm-3 post-meta">
+                                <table class="table borderless" frame="border">
+                                    <tr>
+                                        <td class="text-muted text-right"><small>Category:</small></td>
+                                        <td>
+                                            <a href="{% url 'suggest:category' post.post_type %}">
+                                                <button class='btn btn-default btn-xs pagination-centered'>{{ post.category }}</button>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted text-right"><small>Tags:</small></td>
+                                        <td>
+                                            {% for tag in post.tags.values %}
+                                                <a href="{% url 'suggest:tag' tag.slug %}">
+                                                    <button class='btn btn-default btn-xs'>{{ tag.name }}</button>
+                                                </a>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td class="text-muted text-right"><small>Last Updated:</small></td>
+                                        <td>
+                                            <time datetime="{{ post.last_updated_date }}">
+                                                {% if post.get_update_time_diff.days != 0 %}
+                                                    {% if post.get_update_time_diff.days == 1 %}
+                                                        <mdall> 1 day ago </mdall>
+                                                    {% else %}
+                                                        <mdall> {{ post.get_update_time_diff.days }} days ago</mdall>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <mdall> {{post.get_update_time_diff.seconds|findtimediff}} ago</mdall>
+                                                {% endif %}
+                                            </time>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted text-right"><small>Status</small></td>
+                                        <td>
+                                            {% if post.is_closed %}
+                                                <button class='btn btn-danger btn-xs' id='post-status'>CLOSED</button>
+                                            {% else %}
+                                                <button class='btn btn-success btn-xs' id='post-status'>OPEN</button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted text-right"><small>Views</small></td>
+                                        <td>
+                                            {{ post.num_of_views }}
+                                        </td>
+                                    </tr>
+                                </table>
+                                {% if post.is_closed == False %}
+                                    {% if user != None %}
+                                    <div class='text-center'>
+                                        <button class='btn btn-default' id="post-{{ post.slug }}-createcomment">
+                                            <i class="fa fa-reply" style="font-size:18px" >
+                                            </i>
+                                        </button>
+                                        {% if user.pk = post.user.pk %}
+                                            <a href="{% url 'suggest:updatepostform' post.slug %}">
+                                                <button class='btn btn-default' id="post-{{ post.slug }}-edit">
+                                                    <i class="fa fa-pencil-square-o" style="font-size:18px">
+                                                    </i>
+                                                </button>
+                                            </a>
+                                            <button class='btn btn-default' id="post-{{ post.slug }}-delete">
+                                                <i class="fa fa-trash" style="font-size:18px">
+                                                </i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                            </section>
+                        </div>
+                        <hr>
+                        {% if post.is_flagged %}
+                        
+                            <div class='row' style='display:inline-block;' id='flag-info-div'>
+                                <div class='col-sm-offset-3 col-sm-9'>
+                                    <b class='text-muted'>Flagged:</b>
+                                    <span class='text-muted' id='flags-text'>
+                                        {% for flag_tuple in post_flags_list %}
+                                            {% if forloop.counter0 != 0 %} | {% endif %}
+                                            <b>{{ flag_tuple.0|get_full_flag_name }}</b>
+                                            <a href="{% url 'suggest:userposts' flag_tuple.1 %}" class="text-muted"> (~{{ flag_tuple.1 }})</a> 
+                                        {% endfor %} 
+                                    </span>
+                                </div>
+                                <hr>
+                            </div>
+                        {% else %}
+                            <div class='row' style='display:none;' id='flag-info-div'>
+                                <div class='col-sm-offset-3 col-sm-9'>
+                                    <b class='text-muted'>Flagged:</b>
+                                    <span class='text-muted' id='flags-text'>
+                                    </span>
+                                </div>
+                                <hr>
+                            </div>
+                        {% endif %}
+                        
+                        <div class='row'>
+                            <div class='col-sm-12'>
+                                <div id='post-{{ post.slug }}-commenttopdiv' style="display:none;">
+                                    <ul class="nav nav-tabs" role="addcommenthead">
+                                        <li class="active" role="presentation" id="add-comment-head">
+                                            <a href="#js-comments" role="tab" data-toggle="tab">
+                                                <i class="fa fa-comments-o"></i>
+                                                Add Comment
+                                            </a>
+                                        </li>
+                                    </ul> 
+                                    <div class="panel panel-default comment-panel">
+                                        <div class="panel-body">
+                                            <div class='row-outer'>
+                                                <div class='col-sm-9'>
+                                                    <div class="comment-description" >
+                                                        <form id="commentformtop">
+                                                            {% csrf_token %}
+                                                            <table>
+                                                                {{ comment_form.as_table }}
+                                                            </table>
+                                                            <button class="btn btn-success btn-sm" type="submit" name="submit">Submit</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div class='col-sm-offset-1 col-sm-1'>
+                                                    <button class='btn btn-danger btn-sm' id='commentcanceltop'>Cancel</button>
+                                                </div>
+                                            </div>
+                                           
+                                            <br/>
+                                            <br/>
+                                        </div> 
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div role="tabpanel" class="comments-and-reviews-panel" id="comments">
+                                    <ul class="nav nav-tabs" role="tablist">
+                                        <li class="active" role="presentation" id="public-comments">
+                                            <a href="#js-comments" role="tab" data-toggle="tab">
+                                                <i class="fa fa-comments-o"></i>
+                                                Comments
+                                            </a>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content padded">
+                                        <div class="tab-pane active" id="js-comments" role="tabpanel">
+                                            {% if comment_list|length == 0 %}
+                                            <div id='nocommentsyet'>
+                                            {% else %}
+                                            <div id='nocommentsyet' style='display:none'>
+                                            {% endif %}
+                                                <hr style='margin:1px;'>
+                                                <h3>No comments yet</h3>
+                                            </div>
+                    
+                                            {% for comment in comment_list %}
+                                                <div id='comment-{{ comment.slug }}-div'>
+                                                    <div class="panel panel-default comment-panel">
+                                                        <div class="panel-body">
+                                                            <div class='row-outer'>
+                                                                <div class="col-sm-1">
+                                                                    <div class="comment-vote-panel text-center">
+                                                                        <div class="text-center">
+                                                                            {% if vote_state_list|index:forloop.counter0  == 1%}
+                                                                                <i class="fa fa-chevron-up" id="comment-{{ comment.slug }}-upvote"></i>
+                                                                            {% else %}
+                                                                                <i class="fa fa-chevron-up text-muted" id="comment-{{ comment.slug }}-upvote"></i>
+                                                                            {% endif %}
+                                                                            <h5 class="text-muted clear-margin vote-count" id="post-{{ post.slug }}-comment-{{ comment.slug }}-votecount">
+                                                                                {% with comment.numDownVotes as downvotes %}
+                                                                                    {{ comment.numUpVotes|subtract:downvotes }}
+                                                                                {% endwith %}
+                                                                            </h5>
+                                                                            {% if vote_state_list|index:forloop.counter0 == -1 %}
+                                                                                <i class="fa fa-chevron-down" id="comment-{{ comment.slug }}-downvote"></i>
+                                                                            {% else %}
+                                                                                <i class="fa fa-chevron-down text-muted" id="comment-{{ comment.slug }}-downvote"></i>
+                                                                            {% endif %}
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class='col-sm-9'>
+                                                                    <div class="comment-description" id="comment-{{ comment.slug }}">
+                                                                        <span>
+                                                                            <p id='comment-{{comment.slug}}-text'>{{ comment.text }}</p>
+                                                                        </span>
+                                                                        <b class='text-muted' id="comment-{{comment.slug}}-anonymity">
+                                                                            {% if comment.posted_anonymously %}
+                                                                                Anonymous |
+                                                                            {% else %} 
+                                                                                {{ comment.user.first_name }} {{ comment.user.last_name }} 
+                                                                                <a href="{% url 'suggest:userposts' comment.user.username %}" class="text-muted"> (~{{ comment.user.username }}) |
+                                                                                </a> 
+                                                                            {% endif %} 
+                                                                        </b>
+                                                                        <small class="text-muted">
+                                                                            <time datetime="{{ comment.pub_date }}" title="Created On">
+                                                                                {% if comment.get_time_diff.days != 0 %}
+                                                                                    {% if comment.get_time_diff.days == 1 %}
+                                                                                        <mdall> Commented 1 day ago </mdall>
+                                                                                    {% else %}
+                                                                                        <mdall> Commented {{ comment.get_time_diff.days }} days ago</mdall>
+                                                                                    {% endif %}
+                                                                                {% else %}
+                                                                                    <mdall> Commented {{ comment.get_time_diff.seconds|findtimediff }} ago</mdall>
+                                                                                {% endif %}
+                                                                            </time>     
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-sm-2">
+                                                                    {% if post.is_closed == False %}
+                                                                        {% if user != None %}
+                                                                            <button class='btn btn-default' id="comment-{{ comment.slug }}-reply">
+                                                                                <i class="fa fa-reply" style="font-size:12px">
+                                                                                </i>
+                                                                            </button>
+
+                                                                            <button class='btn btn-danger btn-sm' id='comment-{{ comment.slug }}-cancelreply' style='display:none'>Cancel</button>
+                                                                        
+                                                                            {% if user.pk = comment.user.pk %}
+                                                                                <button class='btn btn-default' id="comment-{{ comment.slug }}-edit">
+                                                                                    <i class="fa fa-pencil-square-o" style="font-size:12px">
+                                                                                    </i>
+                                                                                </button>
+                                                                                <button class='btn btn-default' id="comment-{{ comment.slug }}-delete">
+                                                                                    <i class="fa fa-trash" style="font-size:12px">
+                                                                                    </i>
+                                                                                </button>
+                                                                            {% endif %}
+                                                                        {% endif %}
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                           
+                                                            <br/>
+                                                            <br/>
+                                                            <hr>
+                                                            <div id="comment-{{comment.slug}}-replies" class='repliesset'>
+                                                                {% for reply in comment.userreply_set.all %}
+                                                                    {% if reply.is_published %}
+                                                                        <div class='replybody' id='comment-{{ comment.slug }}-reply-{{reply.slug}}-div'>
+                                                                            <div class="row-outer">
+                                                                                <div class='col-sm-8 col-sm-offset-2'>
+                                                                                    <div class="reply-description" id="comment-{{ comment.slug }}-reply-{{ reply.slug }}">
+                                                                                        <span><p id="comment-{{ comment.slug }}-reply-{{ reply.slug }}-text">{{ reply.text }}</p></span>
+                                                                                        <b class='text-muted' id="comment-{{ comment.slug }}-reply-{{ reply.slug }}-anonymity">
+                                                                                            {% if reply.posted_anonymously %}
+                                                                                                Anonymous |
+                                                                                            {% else %}
+                                                                                                {{ reply.user.first_name }} {{ reply.user.last_name }} 
+                                                                                                <a href="{% url 'suggest:userposts' reply.user.username %}" class="text-muted"> (~{{ reply.user.username }}) | 
+                                                                                                </a>
+                                                                                            {% endif %}
+                                                                                        </b>
+                                                                                        <small class="text-muted"> 
+                                                                                            <time datetime="{{ reply.pub_date }}" title="Created On">
+                                                                                                {% if reply.get_time_diff.days != 0 %}
+                                                                                                    {% if reply.get_time_diff.days == 1 %}
+                                                                                                        <mdall> Replied 1 day ago </mdall>
+                                                                                                    {% else %}
+                                                                                                        <mdall> Replied {{ reply.get_time_diff.days }} days ago</mdall>
+                                                                                                    {% endif %}
+                                                                                                {% else %}
+                                                                                                    <mdall> Replied {{ reply.get_time_diff.seconds|findtimediff }} ago</mdall>
+                                                                                                {% endif %}
+                                                                                            </time>
+                                                                                        </small>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class='col-sm-2'>
+                                                                                {% if post.is_closed == False %}
+                                                                                    {% if reply.user.pk = user.pk %}
+                                                                                        <button class='btn btn-default' id="comment-{{ comment.slug }}-reply-{{ reply.slug }}-edit">
+                                                                                            <i class="fa fa-pencil-square-o" >
+                                                                                            </i>
+                                                                                        </button>
+                                                                                        <button class='btn btn-default' id="comment-{{ comment.slug }}-reply-{{ reply.slug }}-delete">
+                                                                                            <i class="fa fa-trash">
+                                                                                            </i>
+                                                                                        </button>
+                                                                                    {% endif %}
+                                                                                {% endif %}
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class='row-outer'>
+                                                                                <div class="col-sm-10 col-sm-offset-2">
+                                                                                    <hr style="padding:2px; margin:1px;">
+                                                                                </div>
+                                                                            </div>
+                                                                            <!-- <hr style="padding:2px; margin:1px;"> -->
+                                                                        </div>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                            <div id="comment-{{ comment.slug }}-replydiv" class='replyform' style="display:none">
+                                                                <div class="panel panel-default comment-panel">
+                                                                    <div class="panel-body">
+                                                                        <div class='row-outer'>
+                                                                            <div class='col-sm-8 col-sm-offset-2'>
+                                                                                <div class="reply-description" >
+                                                                                    <form id="comment-{{ comment.slug }}-replyform">
+                                                                                        {% csrf_token %}
+                                                                                        <table>
+                                                                                            {{ reply_form.as_table }}
+                                                                                        </table>
+                                                                                        <button class="btn btn-success btn-sm" type="submit" name="submit">Submit</button>
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div> 
+                                                                </div>
+                                                            </div>
+                                                        </div> 
+                                                    </div>
+                                                </div>
+                                            {% endfor %}    
+                                        </div>
+
+                                        <div id='commentbottomdiv'>
+                                            <ul class="nav nav-tabs" role="addcommenthead">
+                                                <li class="active" role="presentation" id="add-comment-head">
+                                                    <a href="#js-comments" role="tab" data-toggle="tab">
+                                                        <i class="fa fa-comments-o"></i>
+                                                        Add Comment
+                                                    </a>
+                                                </li>
+                                            </ul> 
+                                            <div class="panel panel-default comment-panel">
+                                                <div class="panel-body">
+                                                    <div class='row-outer'>
+                                                        <div class='col-sm-10'>
+                                                            <div class="comment-description" >
+                                                                <form id="commentformbottom">
+                                                                    {% csrf_token %}
+                                                                    <table>
+                                                                        {{ comment_form.as_table }}
+                                                                    </table>
+                                                                    <button class="btn btn-success btn-sm" type="submit" name="submit">Submit</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                   
+                                                    <br/>
+                                                    <br/>
+                                                </div> 
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock center_block %} 
+
+
+{% block scripts %}
+<script src="{% static 'js/jquery.min.js' %}"></script>
+    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>  -->
+<script type='text/javascript' >
+    var urlMap = JSON.parse('{{ urlMap|escapejs }}');
+    //Plus for converting the string to integer
+    var comment_count = +"{{ comment_list|length }}";
+
+    var post_slug = "{{ post.slug }}";
+    var comment_slug_list = JSON.parse("{{ comment_slug_list|escapejs }}");
+    var comment_reply_slug_dict = JSON.parse("{{ reply_slugs_json|escapejs }}");
+    
+    function changeCloseButton()
+    {
+
+        if($('#closepost').is(':hidden'))
+        {
+            $('#openpost').hide();
+            $('#closepost').show();
+        }
+        else if($('#closepost').is(':visible') || $('#openpost').is(':hidden'))
+        {
+            $('#closepost').hide();
+            $('#openpost').show();
+        }
+        else
+        {
+            alert("Invalid state of openclosebutton. Please refresh page to avoid errors.");
+        }
+    }
+
+
+    function changeIcon(up_true) {
+        var iconup = $("#upvoteicon");
+        var icondown = $("#downvoteicon");
+        if(up_true == 'True')
+        {
+            // alert("up_true is True");
+            if(iconup.hasClass("text-muted"))
+            {   
+                if(icondown.hasClass("text-muted"))
+                {
+                    // alert("icon down had class text muted");
+                }
+                else
+                {
+                    icondown.addClass("text-muted");
+                    // alert("icon down class added text-muted");
+                }
+                iconup.removeClass("text-muted");
+            }
+            else
+            {
+                iconup.addClass("text-muted");   
+            }
+        }
+        else if (up_true == 'False')
+        {   
+            // alert("up_true is False");
+            if(icondown.hasClass("text-muted"))
+            {
+                if(!iconup.hasClass("text-muted"))
+                {
+                    iconup.addClass("text-muted");
+                }
+                icondown.removeClass("text-muted");  
+                
+            }
+            else
+            {   
+                icondown.addClass("text-muted");
+
+            }  
+        }
+
+        else
+        {
+            alert("invalid state of up_true passed to changeicon");
+        }
+    }
+
+    function changeVoteIcon(up_true,comment_slug) {
+
+        var upvoteiconid = "#comment-"+comment_slug+"-upvote"
+        var downvoteiconid = "#comment-"+comment_slug+"-downvote"
+        // alert(upvoteiconid);
+        // alert(downvoteiconid);
+        var iconup = $(upvoteiconid);
+        var icondown = $(downvoteiconid);
+
+        if(up_true == 'True')
+        {   
+            //If the icon has been selected, then unselect it 
+            if(!iconup.hasClass("text-muted"))
+            {
+                iconup.addClass("text-muted")
+                //iconup.css("font-size", "30px;");
+            }
+            else
+            {
+                if(!icondown.hasClass("text-muted"))
+                {
+                    icondown.addClass("text-muted");
+                   // icondown.css("font-size", "30px;");
+
+                }
+                iconup.removeClass("text-muted");   
+               // iconup.css("font-size", "40px;");
+            }
+        }
+        else
+        {
+            if(!icondown.hasClass("text-muted"))
+            {
+                
+                icondown.addClass("text-muted");
+                //icondown.css("font-size", "30px;");
+            }
+            else
+            {   
+                if(!iconup.hasClass("text-muted"))
+                {
+                    iconup.addClass("text-muted");
+                   // iconup.css("font-size", "30px;");
+
+                }
+                icondown.removeClass("text-muted");  
+               // icondown.css("font-size", "40px;"); 
+            }  
+        }
+    }
+
+    function up(slug)
+    {   
+        $.post('/ajax/post/voteup', {post_slug:slug}, function(response) {
+
+        var jsondata = response;
+        if (typeof jsondata == 'object')
+        {  
+            if(jsondata['closed'] != 'True')
+            {
+            // alert("Before changing the icon");
+            changeIcon('True');
+            $("#numOfVotes").html(jsondata['number']);
+            // alert("After chaging content of numOfVotes");
+            }
+        }
+        else
+        {
+            alert("The returned response from down and recall-vote is not json");
+        }
+        }, "json");
+    }
+        
+
+    function down(slug)
+    {   
+        
+        $.post('/ajax/post/votedown', {post_slug:slug}, function(response) {
+
+        var jsondata = response;
+        if (typeof jsondata == 'object')
+        {   
+            if(jsondata['closed'] != 'True')
+            {
+                $("#numOfVotes").html(jsondata['number']);
+                // alert("After chaging content of numOfVotes");
+                changeIcon('False');
+            }
+        }
+        else
+        {
+            // //For debugging
+            // alert("The returned response from down and recall-vote is not json");
+        }
+        }, "json");
+    }
+
+
+
+    function upcomment(slug,comment_slug)
+    {   
+        //returning the callbackfunction
+        return function()
+        {   
+            // //For debugging
+            // alert("Inside upcomment");
+
+            $.post('/ajax/post/comment/voteup', {post_slug:slug,comment_slug:comment_slug}, function(response) {
+            
+                // //For debugging
+                // alert("callback funtion returned");
+
+                var jsondata = response;
+                if (typeof jsondata == 'object')
+                {   
+                    if(jsondata['success'] == 'True')
+                    {
+                        if(jsondata['closed'] && jsondata['closed'] == 'True')
+                        {   
+                            // //For debugging 
+                            // alert("The post is closed, no voting allowed on closed post");
+                           
+                            //TODO
+                            //Do nothing 
+                        }  
+                        else
+                        {
+                            // //For debugging 
+                            // alert("Before changing the content of total votes on a comment");
+                           
+                            $("#post-"+slug+"-comment-"+comment_slug+"-votecount").html(jsondata['number']);
+                           
+                            // //For debugging
+                            // alert("After chaging content of numOfVotes");
+                           
+                            changeVoteIcon('True',comment_slug);
+                           
+                            // //For debugging
+                            // alert("after changing vote icon");
+                        }
+                    }
+                    else if(jsondata['success'] == 'False')
+                    {
+                        // //For debugging
+                        // alert("Upvote on comment unsuccessful.");
+                    }
+                    else
+                    {
+                        // //For debugging
+                        // alert("The returned json has no success attribute");
+                    }
+                    
+                }
+                else
+                {
+                    // //For debugging
+                    // alert("The returned response from down and recall-vote is not json");
+                }
+            
+            }, "json");
+        }
+    }
+
+
+    function downcomment(slug,comment_slug)
+    {   
+        //returning the callback function
+        return function()
+        {
+            $.post('/ajax/post/comment/votedown', {post_slug:slug,comment_slug:comment_slug}, function(response) {
+
+            var jsondata = response;
+            if (typeof jsondata == 'object')
+            {   
+                if(jsondata['closed'] != 'True')
+                {
+                    $("#post-"+slug+"-comment-"+comment_slug+"-votecount").html(jsondata['number']);
+                    // alert("After chaging content of numOfVotes");
+                    changeVoteIcon('False',comment_slug);
+                }
+            }
+            else
+            {
+                // //For debugging
+                // alert("The returned response from down and recall-vote is not json");
+            }
+            }, "json");
+        }
+    }
+
+    function manageiconsdisplay(display)
+    {
+        var postidprefix = '#post-'+post_slug+'-';
+
+        var replytopost = postidprefix+'createcomment';
+        var editpost = postidprefix+'edit';
+        var deletepost = postidprefix+'delete';
+
+        if(display == 'False')
+        {   
+            $('#flagpost').hide();
+            $(replytopost).hide();
+            $(editpost).hide();
+            $(deletepost).hide();
+            $('#post-status').html('CLOSED')
+            $('#post-status').removeClass('btn-success').addClass('btn-danger');
+        }
+        else if(display == 'True')
+        {   
+            $('#flagpost').show();
+            $(replytopost).show();
+            $(editpost).show();
+            $(deletepost).show();
+            $('#post-status').html('OPEN')
+            $('#post-status').removeClass('btn-danger').addClass('btn-success');
+        }
+        else
+        {
+            alert("Invalid value of the argument display in manageiconsdisplay");
+        }
+
+
+        for(index in comment_slug_list)
+        {   
+            var comment_slug = comment_slug_list[index];
+            var prefixofid = "#comment-"+comment_slug+"-";
+            // var upvoteiconid = prefixofid + "upvote";
+            // var downvoteiconid = prefixofid + "downvote";
+            var createreplyform = prefixofid + "reply";
+            // var replyform = prefixofid + "replyform";
+            var deletecomment = prefixofid + "delete"
+            var updatecommentform = prefixofid + "edit"; 
+            // var commentcancelreply = prefixofid + "cancelreply";
+
+            //TODO add the slugs of newly generated comments and replies to the global json lists
+            //comment_slug_list and comment_reply_slug_dict
+            if(display == 'False')
+            {   //Hide the comment buttons    
+                $(createreplyform).hide();
+                if($(updatecommentform).length > 0)
+                {
+                    $(updatecommentform).hide();
+                }
+                if($(deletecomment).length > 0)
+                {
+                    $(deletecomment).hide();
+                }
+
+                var replyslugs = comment_reply_slug_dict[comment_slug];
+
+                for(replyindex in replyslugs)
+                {
+                    reply_slug = replyslugs[replyindex];
+                    var prefixofreplyid = prefixofid+"reply-"+reply_slug+"-";
+                    var updatereplyform = prefixofreplyid+"edit";
+                    var deletereply = prefixofreplyid+"delete";
+
+                    //Hide the reply edit and delete buttons
+
+                    if($(deletereply).length > 0)
+                    {
+                        $(deletereply).hide();
+                    }
+                    if($(updatereplyform).length > 0)
+                    {
+                        $(updatereplyform).hide();
+                    }
+                }
+            }
+            else if(display == 'True')
+            {
+                //Show the comment buttons    
+                $(createreplyform).show();
+                if($(updatecommentform).length > 0)
+                {
+                    $(updatecommentform).show();
+                }
+                if($(deletecomment).length > 0)
+                {
+                    $(deletecomment).show();
+                }
+
+                var replyslugs = comment_reply_slug_dict[comment_slug];
+
+                for(replyindex in replyslugs)
+                {
+                    reply_slug = replyslugs[replyindex];
+                    var prefixofreplyid = prefixofid+"reply-"+reply_slug+"-";
+                    var updatereplyform = prefixofreplyid+"edit";
+                    var deletereply = prefixofreplyid+"delete";
+
+                    //Hide the reply edit and delete buttons
+
+                    if($(deletereply).length > 0)
+                    {
+                        $(deletereply).show();
+                    }
+                    if($(updatereplyform).length > 0)
+                    {
+                        $(updatereplyform).show();
+                    }
+                }
+            }
+        }
+    }
+
+
+    function postCloseOpen(post_slug)
+    {
+        return function()
+        {
+            // changeCloseButton();
+            $.post('/ajax/post/closeopen',{post_slug:post_slug}, function(response) {
+                var jsondata = response;
+                if (typeof jsondata == 'object')
+                {   
+                    if(jsondata['success'] == 'True')
+                    {
+                        //Toggle the post close open button
+                        changeCloseButton();
+
+                        if(jsondata['is_closed'] == 'True')
+                        {   
+                            //If the post is closed then hide the icons(display = False)
+                            manageiconsdisplay('False'); 
+                        }
+                        else if(jsondata['is_closed'] == 'False')
+                        {   
+                            //If the post is open then display the icons(display = True)
+                            manageiconsdisplay('True');
+                        }
+                        else
+                        {
+                            alert("The returned json object has no is_closed attribute.");
+                        }
+                        
+
+                    }
+                    else if(jsondata['success'] == 'False')
+                    {
+                        alert(jsondata['exception']);
+                    }
+                    else
+                    {
+                        alert("The returned json has no success attribute");
+                    }
+                }
+                else
+                {
+                    alert("The returned object is not json.");
+                }
+            });
+        }
+    }
+
+
+    function display_reply_form(comment_slug)
+    {   
+        return function(event)
+        {   
+            //Show the reply form and hide the reply icon
+            $("#comment-"+comment_slug+"-replydiv").show();
+            $("#comment-"+comment_slug+"-reply").hide();
+            $("#comment-"+comment_slug+"-cancelreply").show();
+            console.log("comment form displayed in css and reply button hidden");
+        }
+    }
+
+    function display_comment_form(post_slug)
+    {
+        return function()
+        {   
+            //Hide the commentform at the bottom of the post
+            $("#commentbottomdiv").hide();
+            $("#post-"+post_slug+"-createcomment").hide();
+            //Display the comment form at the beginning of all the comments
+            $("#post-"+post_slug+"-commenttopdiv").css("display","block");
+            console.log("comment from displayed in css at the beginning of the comments.");
+        }
+    }
+
+    function create_comment(comment_slug,comment_text,usernameoranon,comment_pub_date,commented_how_ago,comment_form_id)
+    {
+        var comment_html = "<div id='comment-"+comment_slug+"-div'><div class='panel panel-default comment-panel'><div class='panel-body'><div class='row-outer'><div class='col-sm-1'><div class='comment-vote-panel text-center'><div class='text-center'><i class='fa fa-chevron-up text-muted' id='comment-" +comment_slug+"-upvote'></i><h5 class='text-muted clear-margin vote-count' id='post-"+post_slug+"-comment-"+comment_slug+"-votecount'>0</h5><i class='fa fa-chevron-down text-muted' id='comment-"+comment_slug+"-downvote'></i></div></div></div><div class='col-sm-9'><div class='comment-description' id='comment-"+comment_slug+"'><span><p id='comment-"+comment_slug+"-text'>"+comment_text+"</p></span><b class='text-muted' id = 'comment-"+comment_slug+"-anonymity'>"+usernameoranon+"</b><small class='text-muted'><time datetime="+comment_pub_date+" title='Created On'><mdall>"+commented_how_ago+"</mdall></time></small></div></div><div class='col-sm-2'><button class='btn btn-default' id='comment-"+comment_slug+"-reply'><i class='fa fa-reply' style='font-size:12px'></i></button><button class='btn btn-danger btn-sm' id='comment-"+comment_slug+"-cancelreply' style='display:none'>Cancel</button><button class='btn btn-default' id='comment-"+comment_slug+"-edit'><i class='fa fa-pencil-square-o' style='font-size:12px'></i></button><button class='btn btn-default' id='comment-"+comment_slug+"-delete'><i class='fa fa-trash' style='font-size:12px'></i></button></div></div><br/><br/><hr><div id='comment-"+comment_slug+"-replies' class='repliesset'></div></div></div><div id='comment-"+comment_slug+"-replydiv' class='replyform' style='display:none;'><div class='panel panel-default comment-panel'><div class='panel-body'><div class='row-outer'><div class='col-sm-9 col-sm-offset-2'><div class='reply-description'><form id='comment-"+comment_slug+"-replyform'>{% csrf_token %}<table>"+'{% autoescape off %}{{ reply_form.as_table|removenewline }}{% endautoescape %}';
+            comment_html = comment_html + "</table><button class='btn btn-success btn-sm' type='submit' name='submit'>Submit</button></form></div></div></div><br/><br/></div></div></div></div>";
+        
+    
+        $("#js-comments").append(comment_html);
+        $(comment_form_id)[0].reset();
+
+        //Add event handlers to handle deletion,updation and replying to the given comment
+        //Adding the event handlers for upvote and downvote on comment
+        var upvoteiconid = "#comment-"+comment_slug+"-upvote";
+        var downvoteiconid = "#comment-"+comment_slug+"-downvote";
+        var createreplyform = "#comment-"+comment_slug+"-reply";
+        var updatebutton = "#comment-"+comment_slug+"-edit";
+        var deletebutton = "#comment-"+comment_slug+"-delete";
+        var replyform = "#comment-"+comment_slug+"-replyform";
+        var commentcancelreply = "#comment-"+comment_slug+"-cancelreply";
+
+        $(upvoteiconid).click(upcomment(post_slug,comment_slug));
+        $(downvoteiconid).click(downcomment(post_slug,comment_slug));
+        $(createreplyform).click(display_reply_form(comment_slug))
+        $(deletebutton).click(removecomment(comment_slug));
+        if($(updatebutton).length > 0)
+        {
+            $(updatebutton).click(display_comment_update_form(comment_slug));
+        }
+        $(replyform).submit(managereplyformsubmission(replyform,comment_slug));
+        $(commentcancelreply).click(hidereplyform(comment_slug));
+
+        comment_count = comment_count + 1;
+        if(comment_count > 0)
+        {
+            if($('#nocommentsyet').length > 0)
+            {
+                $('#nocommentsyet').hide();
+            }
+        }
+    }
+
+    function create_reply(comment_slug,reply_slug,reply_text,usernameoranon,reply_pub_date,replied_how_ago)
+    {
+     
+        var reply_html = "<div class='replybody' id='comment-"+comment_slug+"-reply-"+reply_slug+"-div'><div class='row-outer'><div class='col-sm-8 col-sm-offset-2'><div class='reply-description' id='comment-"+comment_slug+"-reply-"+reply_slug+"'><span><p id='comment-"+comment_slug+"-reply-"+reply_slug+"-text'>"+reply_text+"</p></span><b class='text-muted' id='comment-"+comment_slug+"-reply-"+reply_slug+"-anonymity'>"+usernameoranon+"</b><small class='text-muted'><time datetime="+reply_pub_date+" title='Created On'><mdall>"+replied_how_ago+"</mdall></time></small></div></div><div class='col-sm-2'><button class='btn btn-default' id='comment-"+comment_slug+"-reply-"+reply_slug+"-edit'><i class='fa fa-pencil-square-o'></i></button><button class='btn btn-default' id='comment-"+comment_slug+"-reply-"+reply_slug+"-delete'><i class='fa fa-trash'></i></button></div></div><div class='row-outer'><div class='col-sm-10 col-sm-offset-2'><hr style='padding:2px; margin:1px;'></div></div></div>";
+
+            $("#comment-"+comment_slug+"-replies").append(reply_html);
+
+            var prefixofid = "#comment-"+comment_slug+"-";
+            var deletereply = prefixofid+"reply-"+reply_slug+"-delete";
+            var editreply = prefixofid+"reply-"+reply_slug+"-edit";
+
+            //Bind reply deletion and updation handlers to corresponding elements
+            $(deletereply).click(removereply(comment_slug,reply_slug));
+            $(editreply).click(display_reply_update_form(comment_slug,reply_slug));
+
+            //Reset the comment form and hide the div in which it was contained                            
+            $(prefixofid + "replyform")[0].reset();
+            $(prefixofid + "replydiv").hide();
+
+
+            //Also hide the cancel button and show the reply button
+            $(prefixofid + "cancelreply").hide();
+            $(prefixofid + "reply").show();
+    }
+
+    //Creating closure for deleting comments handler
+    function removecomment(comment_slug)
+    {
+        //TODO
+        //Modify this function for a seamless and beautiful confirmation 
+        //dialogue box with proper styling and responsiveness
+        return function(event)
+        {
+            event.preventDefault();
+            if(confirm("Are you sure you want to delete the comment "+comment_slug))
+            {
+                $.post('/ajax/deletecomment/',{comment_slug:comment_slug},function(response)
+                {
+                    var jsondata = response;
+
+                    if(typeof jsondata == 'object')
+                    {
+                        if(jsondata['success'] == 'True')
+                        {   
+                            $('#comment-'+comment_slug+'-div').hide();
+                            comment_count = comment_count - 1;
+
+                            if(comment_count == 0)
+                            {
+                                $('#nocommentsyet').show();
+                            }
+                        }
+                        else if(jsondata['success'] == 'False')
+                        {
+                            alert("The comment deletion was unsuccessful,Please try again.");
+                        }
+                        else
+                        {
+                            alert("The returned Json response has not success attribute");
+                        }
+                    }
+                    else
+                    {
+                        alert("The returned object is not json.");                
+                    }
+                   
+                });
+            }
+            else
+            {
+                alert("You pressed cancel, comment deletion revoked.");
+            }
+        }
+    }
+
+    function removereply(comment_slug,reply_slug)
+    {
+        return function(event)
+        {
+            event.preventDefault();
+            if(confirm("Do you want to delete the reply"+reply_slug))
+            {
+                $.post('/ajax/deletereply/',{comment_slug:comment_slug,reply_slug,reply_slug},function(response)
+                {
+                    var jsondata = response;
+                    if(typeof jsondata == 'object')
+                    {
+                        if(jsondata['success'] == 'True')
+                        {
+                            $('#comment-'+comment_slug+'-reply-'+reply_slug+'-div').hide();
+                        }
+                        else if(jsondata['success'] == 'False')
+                        {
+                            alert("The reply deletion was unsuccessful, Please try again.");
+                        }
+                        else
+                        {
+                            alert("The returned json object has no success attribute.");
+                        }
+                    }
+                    else
+                    {
+                        alert("The returned object is not json.");
+                    }
+                });
+            }
+            else
+            {
+                alert("You pressed cancel, reply deletion revoked");
+                console.log("Revoked deleting reply "+ reply_slug);
+            }
+        }
+    }
+
+    function managepostdeletion(post_slug)
+    {
+        return function(event)
+        {
+            if(confirm("Do you want to delete the post\n"+"{{post.title}}"))
+            {
+                $.post('/ajax/deletepost/',{post_slug:post_slug},function(response)
+                {
+                    var jsondata = response;
+                    if(typeof jsondata == 'object')
+                    {
+                        if(jsondata['success'] == 'True')
+                        {
+                            //TODO either change the location of the current page to trending,
+                            //or display a message on the page regarding successful post
+                            //deletion and let the use decide what to do.
+                            alert("Your post with title \n" + jsondata['post_title'] + "\nhas been deleted successfully");
+                            window.location.href = 'http://localhost:8000/suggest/home/';
+                        }
+                        else if(jsondata['success'] == 'False')
+                        {
+                            alert("The post deletion was unsuccessful, Please try again.");
+                        }
+                        else
+                        {
+                            alert("The returned json object has no success attribute.");
+                        }
+                    }
+                    else
+                    {
+                        alert("The returned object is not json.");
+                    }
+
+                });
+            }
+        }
+    }
+    //A utility function to submit comment form
+    //Returns 1 if successfull, otherwise returns 0
+    function submitcommentform(comment_form_id)
+    {
+       
+        var formarray = $(comment_form_id).serializeArray();
+        var formData = JSON.stringify(formarray)
+        // alert(formData);
+                $.post('/ajax/createcomment/',{post_slug:post_slug,formData:formData},function(response)
+        {   
+            
+            var jsondata = response;
+            if (typeof jsondata == 'object')
+            {   
+                if(jsondata['success'] == 'True')
+                {
+                    var comment_slug = jsondata['comment_slug'];
+                    var comment_text = jsondata['comment_text'];
+                    var usernameoranon = jsondata['usernameoranon'];
+                    var comment_pub_date = jsondata['comment_pub_date'];
+                    var commented_how_ago = jsondata['commented_how_ago'];
+
+                    create_comment(comment_slug,comment_text,usernameoranon,comment_pub_date,commented_how_ago,comment_form_id);
+                }
+                else if(jsondata['success'] == 'False')
+                {
+                    if(jsondata['message'])
+                    {
+                        alert(jsondata['message']);
+                    }
+                    else
+                    {
+                        alert("The comment has not been successfully saved.");
+                    }
+                }
+                else
+                {
+                    alert("Some invalid json response has been returned.");
+                }
+            }  
+        });
+    }
+
+    function submitcommentformtop(comment_form_id)
+    {
+        return function(event)
+        {
+            event.preventDefault();
+            submitcommentform(comment_form_id);
+
+           //Show the comment div at the bottom and the comment button at the top 
+           $('#commentbottomdiv').show(); 
+           $('#post-'+post_slug+'-createcomment').show();
+
+           //Hide the comment div at the top
+           $('#post-'+post_slug+'-commenttopdiv').hide();
+
+            
+        }
+    }
+
+
+    function submitcommentformbottom(comment_form_id)
+    {
+        return function(event)
+        {
+            event.preventDefault();
+            submitcommentform(comment_form_id);
+        }
+     
+    }
+    //Creating closure for replyformsubmission
+    function managereplyformsubmission(replyform,comment_slug)
+    {   
+        return function(event)
+            {
+                //Prevent the default submission 
+                event.preventDefault();
+
+                //Get the form data
+                var formarray = $(replyform).serializeArray();
+                var formData = JSON.stringify(formarray);
+
+                //Ajax request to create the reply
+                $.post('/ajax/createreply/', {comment_slug:comment_slug,formData:formData},function(response)
+                {
+                    var jsondata = response;
+
+                    //Verify if the returned response is json.
+                    if(typeof jsondata == 'object')
+                    {
+                        if(jsondata['success'] == 'True')
+                        {
+                            var comment_slug = jsondata['comment_slug'];
+                            var reply_slug = jsondata['reply_slug'];
+                            var reply_text = jsondata['reply_text'];
+                            var usernameoranon = jsondata['usernameoranon'];
+                            var reply_pub_date = jsondata['reply_pub_date'];
+                            var replied_how_ago = jsondata['replied_how_ago'];
+
+                            //Create a new reply div and append it to the end of the replies set
+                            create_reply(comment_slug,reply_slug,reply_text,usernameoranon,reply_pub_date,replied_how_ago);
+                        }
+                        //If the reply has not been saved successfully in the database;
+                        else if(jsondata['success'] == 'False')
+                        {
+                            alert("The reply has not been saved successfully");
+                        }
+                    }
+                    else
+                    {
+                        alert("Error: The returned response is not json.");
+                    }
+                });
+        
+            }
+    }
+
+    function hidereplyform(comment_slug)
+    {
+        return function(event)
+        {   
+            var prefixofid = "#comment-"+comment_slug+"-";
+            //Hide the reply div and cancel button and show the reply button
+            $(prefixofid + "replydiv").hide();
+            $(prefixofid + "cancelreply").hide();
+            $(prefixofid + "reply").show();
+
+            //Reset the form if the need be
+            $(prefixofid + "replyform")[0].reset(); 
+            console.log("Cancelled Reply to the comment "+comment_slug); 
+        }
+        
+
+    }
+
+
+    function managecommentupdate(comment_slug,form_id)
+    {
+        return function(event)
+        {
+            event.preventDefault();
+
+            // //For debugging
+            // alert("Inside managecommentupdate");
+
+            //Get the form data
+            var formarray = $(form_id).serializeArray();
+            var formData = JSON.stringify(formarray);
+
+            // // For debugging
+            // alert(formData);
+
+            $.post('/ajax/updatecomment/',{formData:formData,post_slug:post_slug,comment_slug:comment_slug},function(response){
+                var jsondata = response;
+                if(typeof jsondata == 'object')
+                {   
+                    //For debugging
+                    // alert("The retuned object is json");
+                    if(jsondata['success'] == 'True')
+                    {   
+                        // //For debugging
+                        // alert("The success attribute of returned object is True");
+                        $('#comment-'+comment_slug+'-text').html(jsondata['comment_text']);
+
+                        // //For debugging
+                        // alert("after changing the comment_text");
+                        if(jsondata['posted_anonymously'] == 'True')
+                        {   
+                            // //For debugging
+                            // alert("Changed the anonymity value to posted_anonymously");
+                            $('#comment-'+comment_slug+'-anonymity').html('Anonymous |')
+                        }
+                        else if(jsondata['posted_anonymously'] == 'False')
+                        {   
+                            // //For debugging
+                            // alert("Changed the anonymity value to not posted_anonymously");
+                            var anonymity_html = jsondata['comment_user_first_name']+" " +jsondata['comment_user_last_name']+"<a href='"+urlMap['userposts_url']+"' class='text-muted'> (~"+jsondata['comment_user_username']+") |</a>";
+                            $('#comment-'+comment_slug+'-anonymity').html(anonymity_html);
+                            // //For debugging
+                            // alert("After changing the anonymity html");
+                        }
+
+                        // //For debugging
+                        // alert("Before reseting the comment updation form");
+
+                        //Reset the comment update form
+                        $('#comment-'+comment_slug+'-updateform')[0].reset();
+
+                        // //For debugging
+                        // alert("After reseting the updation form,before hiding the form");
+
+                        //Hide the comment updateform div
+                        $('#comment-'+comment_slug+'-updatediv').hide();
+
+                        //Show the commentupdatebutton
+                        $('#comment-'+comment_slug+'-edit').show();
+                    }
+                    else if (jsondata['success'] == 'False')
+                    {
+                        alert("The comment couldn't be updated successfully.Please refresh the page to avoid errors.");
+                    }
+                    else
+                    {
+                        alert("The returned response has no success attribute.Please refresh the page.")
+                    }
+                }
+                else
+                {
+                    alert("The returned response is not json");
+                }
+            });
+        }
+    }
+
+
+    function managereplyupdate(comment_slug,reply_slug,form_id)
+    {
+        return function(event)
+        {
+            event.preventDefault();  
+            var replyidprefix = '#comment-'+comment_slug+'-reply-'+reply_slug+'-';
+
+            //Get the form data
+            var formarray = $(form_id).serializeArray();
+            var formData = JSON.stringify(formarray);
+
+            $.post('/ajax/updatereply/',{'formData':formData,'post_slug':post_slug,'comment_slug':comment_slug,'reply_slug':reply_slug},function(response){
+
+                var jsondata = response;
+                if(typeof jsondata == 'object')
+                {   
+                    if(jsondata['success'] == 'True')
+                    {   
+                        $(replyidprefix+'text').html(jsondata['reply_text']);
+                    
+                        if(jsondata['posted_anonymously'] == 'True')
+                        {  
+                            $(replyidprefix+'anonymity').html('Anonymous |')
+                        }
+
+                        else if(jsondata['posted_anonymously'] == 'False')
+                        {                       
+                            var anonymity_html = jsondata['reply_user_first_name']+" " +jsondata['reply_user_last_name']+"<a href='"+urlMap['userposts_url']+"' class='text-muted'> (~"+jsondata['reply_user_username']+") |</a>";
+                            $(replyidprefix+'anonymity').html(anonymity_html);
+                        }
+
+                        //Reset the reply update form
+                        $(replyidprefix+'updateform')[0].reset();
+
+                        //Hide the reply updateform div
+                        $(replyidprefix+'updatediv').hide();
+
+                        //Show the replyupdatebutton and replydeletebutton
+                        $(replyidprefix+'edit').show();
+                        $(replyidprefix+'delete').show();
+                    }
+                    else if (jsondata['success'] == 'False')
+                    {
+                        alert("The reply couldn't be updated successfully.Please refresh the page to avoid errors.");
+                    }
+                    else
+                    {
+                        alert("The returned response has no success attribute.Please refresh the page.")
+                    }
+                }
+                else
+                {
+                    alert("The returned response is not json");
+                }
+            });
+        } 
+    }
+
+
+    function cancelcommentupdate(comment_slug,formdiv)
+    {
+        return function(event)
+        {
+        //Remove the comment update formdiv
+        $(formdiv).remove();
+
+        //Show the comment edit icon
+        $('#comment-'+comment_slug+'-edit').show();
+        }
+    }
+
+    function display_comment_update_form(comment_slug)
+    {   
+
+        return function(event)
+        {
+            // //For debugging
+            // alert("Inside comment update form function");
+            
+            $('#comment-'+comment_slug+'-edit').hide();
+            $.post('/ajax/updatecommentform/',{comment_slug:comment_slug},function(response)
+            {
+                var jsondata = response;
+                if(typeof jsondata == "object")
+                {
+                    if(jsondata['success']=='True')
+                    {
+                        comment_form = jsondata['form'];
+                        new_commentform_html = '<div class="row" id="comment-'+comment_slug+'-updatediv"><div class="col-sm-12"><div id="post-'+post_slug+'-commenttopdiv"><ul class="nav nav-tabs" role="addcommenthead"><li class="active" role="presentation" id="add-comment-head"><a href="#js-comments" role="tab" data-toggle="tab"><i class="fa fa-comments-o"></i>Edit Comment</a></li></ul> <div class="panel panel-default comment-panel"><div class="panel-body"><div class="row-outer"><div class="col-sm-9"><div class="comment-description"><form id="comment-'+comment_slug+'-updateform">'+"{% csrf_token %}"+'<table>'+comment_form+'</table><button class="btn btn-success btn-sm" type="submit" name="submit">Update</button></form></div></div><div class="col-sm-offset-1 col-sm-1"><button class="btn btn-danger btn-sm" id="comment-'+comment_slug+'-canceledit">Cancel</button></div></div><br/><br/><hr></div></div></div></div></div>';
+                        // //For debugging
+                        // alert("generated the html for comment update form");
+
+                        //Insert the new comment update form after the comment element
+                        $(new_commentform_html).insertAfter($('#comment-'+comment_slug+'-div'));
+
+                        // //For debugging
+                        // alert("Inserted the form dynamically");
+
+                        var form_id = '#comment-'+comment_slug+'-updateform';
+                        var cancelupdatebutton = '#comment-'+comment_slug+'-canceledit';
+                        var formdiv = '#comment-'+comment_slug+'-updatediv';
+
+                        // //For debugging
+                        // alert("Before assining handlers");
+
+                        $(form_id).submit(managecommentupdate(comment_slug,form_id));
+                        $(cancelupdatebutton).click(cancelcommentupdate(comment_slug,formdiv));
+
+                        // //For debugging
+                        // alert("after assigning handlers");
+
+                    }
+                    else if(jsondata['success']=='False')
+                    {
+                        alert("Sorry the comment updation form couldn't be displayed.");
+                    }
+                    else
+                    {
+                        alert("The returned json has no success attribute.");
+                    }
+                }
+                else
+                {
+                    alert("The response for comment updation is not json.");
+                }
+            });
+        }
+    }
+
+    
+    function cancelreplyupdate(comment_slug,reply_slug,formdiv)
+    {
+        return function(event)
+        {
+
+        //Remove the reply update formdiv
+        $(formdiv).remove();
+
+        var replyidprefix = '#comment-'+comment_slug+'-reply-'+reply_slug+'-';
+        //Show the reply edit icon and reply delete icon
+        $(replyidprefix+'edit').show();
+        $(replyidprefix+'delete').show();
+        }
+    }
+
+
+    function display_reply_update_form(comment_slug,reply_slug)
+    {
+        return function(event)
+        {
+            event.preventDefault();
+            $.post('/ajax/updatereplyform/',{comment_slug:comment_slug,reply_slug:reply_slug},function(response)
+            {
+                var jsondata = response;
+                var replyidprefix = "#comment-"+comment_slug+"-reply-"+reply_slug+"-";
+                if(typeof jsondata == "object")
+                {
+                    if(jsondata['success']=='True')
+                    {
+                        reply_form = jsondata['form'];
+                        new_replyform_html = '<div id="comment-'+comment_slug+'-reply-'+reply_slug+'-updatediv" class="replyupdateform"><div class="panel panel-default comment-panel"><div class="panel-body"><div class="row-outer"><div class="col-sm-8 col-sm-offset-2"><div class="reply-description" ><form id="comment-'+comment_slug+'-reply-'+reply_slug+'-updateform">'+"{% csrf_token %}"+'<table>'+reply_form+'</table><button class="btn btn-success btn-sm" type="submit" name="submit">Update</button></form></div></div><div class="col-sm-offset-1 col-sm-1"><button class="btn btn-danger btn-sm" id="comment-'+comment_slug+'-reply-'+reply_slug+'-canceledit">Cancel</button></div></div><br/><br/></div></div></div>';
+                       
+                        var replyeditbutton = replyidprefix+'edit';
+                        var replydeletebutton = replyidprefix+'delete';
+                        var replyform_id = replyidprefix+'updateform';
+                        var cancelupdatebutton = replyidprefix+'canceledit';
+                        var formdiv = replyidprefix+'updatediv';
+                        
+                        //Insert the new comment update form after the comment element
+                        $(new_replyform_html).insertAfter($(replyidprefix+'div'));
+
+                        //Hide the replyedit and replydelete buttons
+                        $(replyeditbutton).hide();
+                        $(replydeletebutton).hide();
+
+                        //Bind the event handlers to reply update and update-cancel buttons
+                        $(replyform_id).submit(managereplyupdate(comment_slug,reply_slug,replyform_id));
+                        $(cancelupdatebutton).click(cancelreplyupdate(comment_slug,reply_slug,formdiv));
+
+                    }
+                    else if(jsondata['success']=='False')
+                    {
+                        alert("Sorry the reply update form couldn't be displayed.");
+                    }
+                    else
+                    {
+                        alert("The returned json has no success attribute.");
+                    }
+                }
+                else
+                {
+                    alert("The response for reply updation is not json.");
+                }
+            });
+        }
+    }
+
+    
+    function cancelpostflagging()
+    {   
+        return function(event)
+        {   
+            event.PreventDefault();
+            $('#flagform-div').hide();
+            $('#cancel-post-flag').hide();
+            $('#flagpost').show();
+        }
+    }
+
+    
+    function managepostflagging(form_id,post_slug)
+    {
+        return function(event)
+        {
+            event.preventDefault();
+
+            //Get the form data
+            var formarray = $(form_id).serializeArray();
+            var formData = JSON.stringify(formarray);
+
+            $.post('/ajax/post/flagpost/',{post_slug:post_slug,formData:formData},function(response)
+            {
+                var jsondata = response;
+                if(typeof jsondata == 'object')
+                {
+                    if(jsondata['success'] == 'True')
+                    {                     
+                        $(form_id)[0].reset();
+                        $('#flagform-div').hide();
+                        $('#cancel-post-flag').hide();
+                        $('#flagpost').show();
+
+                        if(jsondata['post_flags_list'])
+                        {   
+                            if(jsondata['post_flags_list'].length != 0) 
+                            {   
+                                span_text_html = '';
+                                var array = jsondata['post_flags_list']
+                                for(i = 0; i < array.length; i++)
+                                {   
+                                    if(i != 0)
+                                        span_text_html = span_text_html + " | ";
+
+                                    array_tuple = array[i];
+                                    type_of_flag = array_tuple[0];
+                                    user_who_flagged = array_tuple[1];
+
+                                    span_text_html = span_text_html + '<b>'+type_of_flag+'</b>'+'<a href="'+urlMap[user_who_flagged]+'" class="text-muted"> (~'+user_who_flagged+')</a>';  
+                                }
+
+                                if($('#flag-info-div').is(':hidden'))
+                                {
+                                    $('#flag-info-div').show();
+                                }
+                                $('#flags-text').html(span_text_html);
+                            }
+                            else
+                            {
+                                $('#flag-info-div').hide();
+                            }
+                        }
+                        else
+                        {
+                            alert("Didn't receive any post_flags_list");
+                        }
+
+                    }
+                    else if(jsondata['success'] == 'False')
+                    {
+                        alert("Flag not saved successfully");
+                    }
+                    else
+                    {
+                        alert("The returned response has no success attribute");
+                    }
+                }
+                else
+                {
+                    alert("The returned resonse is not json");
+                }
+            });
+        }
+    }
+
+
+    function display_flag_form(post_slug)
+    {
+        return function(event)
+        {
+            $('#flagform-div').show();
+            $('#flagpost').hide();
+            $('#cancel-post-flag').show();
+
+            form_id = '#postflag-form';
+            $('#cancel-post-flag').click(cancelpostflagging());
+            //Every time the form is displayed the managepostflagging was bound to the 
+            //submit event.Need to unbind it first then bind the new submit.
+            $(form_id).unbind('submit').submit(managepostflagging(form_id,post_slug));
+        }
+    }
+
+
+    $(document).ready(function()
+    {
+        //Post upvote, downvote event handler binding
+        $("#upvoteclick").click(function()
+        {   
+            up(post_slug);
+        });
+
+        $("#downvoteclick").click(function()
+        {   
+            down(post_slug);
+        });
+
+        //Post closing and opening event handler binding
+        if($("#closepost").length > 0)
+        {
+            $("#closepost").click(postCloseOpen(post_slug));
+        }
+
+        if($("#openpost").length > 0)
+        {
+            $("#openpost").click(postCloseOpen(post_slug));
+        }
+
+        //Post Flagging event handler
+        $('#flagpost').click(display_flag_form(post_slug));
+
+        //Making use of closures to return callback functions
+        var createcommentform = "#post-"+post_slug+"-createcomment";
+        var deleteposticon = "#post-"+post_slug+"-delete";
+
+        $(createcommentform).click(display_comment_form(post_slug));
+        $(deleteposticon).click(managepostdeletion(post_slug));
+
+        for(index in comment_slug_list)
+        {   
+            var comment_slug = comment_slug_list[index];
+            var prefixofid = "#comment-"+comment_slug+"-";
+            var upvoteiconid = prefixofid + "upvote";
+            var downvoteiconid = prefixofid + "downvote";
+            var createreplyform = prefixofid + "reply";
+            var replyform = prefixofid + "replyform";
+            var deletecomment = prefixofid + "delete"
+            var updatecommentform = prefixofid + "edit"; 
+            var commentcancelreply = prefixofid + "cancelreply";
+
+            //Bind event handlers via closures to the corresponding elements
+            $(upvoteiconid).click(upcomment(post_slug,comment_slug));
+            $(downvoteiconid).click(downcomment(post_slug,comment_slug));
+            $(createreplyform).click(display_reply_form(comment_slug));
+            $(replyform).submit(managereplyformsubmission(replyform,comment_slug));
+            $(deletecomment).click(removecomment(comment_slug));
+
+            if($(updatecommentform).length > 0)
+            {
+                $(updatecommentform).click(display_comment_update_form(comment_slug));
+            }   
+            
+            $(commentcancelreply).click(hidereplyform(comment_slug));
+
+            var replyslugs = comment_reply_slug_dict[comment_slug];
+            for(replyindex in replyslugs)
+            {
+                reply_slug = replyslugs[replyindex];
+                var prefixofreplyid = prefixofid+"reply-"+reply_slug+"-";
+                var updatereplyform = prefixofreplyid+"edit";
+                var deletereply = prefixofreplyid+"delete";
+
+                $(deletereply).click(removereply(comment_slug,reply_slug));
+                $(updatereplyform).click(display_reply_update_form(comment_slug,reply_slug));
+            }
+        }
+
+        //Comment form submission event handlers binding
+        $('#commentformbottom').submit(submitcommentformbottom('#commentformbottom'));
+        $('#commentformtop').submit(submitcommentformtop('#commentformtop'));
+        
+        //Comment cancellation event handler binding
+        $('#commentcanceltop').click(function(event)
+        {
+            $('#post-'+post_slug+'-commenttopdiv').hide();
+            $('#commentformtop')[0].reset();
+            $('#commentbottomdiv').show();
+            //Show the commenting icon at the top
+            $('#post-'+post_slug+'-createcomment').show();
+        });
+
+
+    });
+
+    //jQUery for protecting cross site request forgeries 
+    //while submitting django forms through ajax
+    $(function() {
+
+
+        // This function gets cookie with a given name
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+
+        /*
+        The functions below will create a header with csrftoken
+        */
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        function sameOrigin(url) {
+            // test that a given url is a same-origin URL
+            // url could be relative or scheme relative or absolute
+            var host = document.location.host; // host + port
+            var protocol = document.location.protocol;
+            var sr_origin = '//' + host;
+            var origin = protocol + sr_origin;
+            // Allow absolute or scheme relative URLs to same origin
+            return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                // or any other URL that isn't scheme relative or absolute i.e relative.
+                !(/^(\/\/|http:|https:).*/.test(url));
+        }
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                    // Send the token to same-origin, relative URLs only.
+                    // Send the token only if the method warrants CSRF protection
+                    // Using the CSRFToken value acquired earlier
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+    });
+
+
+</script>
+
+{% endblock %}

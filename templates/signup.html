@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block center_block %}
+<center>
+    <h1>{% if errors %}Errors{% endif %}</h1>
+    <strong style='color:red'>{{ errors }}</strong>
+    <h2> Register </h2>
+    <form action="{% url 'suggest:signup_view' %}" method='post'>
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <br style='padding:2px;margin:2px;'/>
+        <button class='btn btn-info btn' type='submit'>SignUp</button>
+    </form>
+</center>
+<center>
+    <h4>Already have an account?</h4>
+    <a href="{% url 'suggest:login' %}">
+        <button class='btn btn-success btn-lg'>Login</button>
+    </a>
+{% endblock %}
