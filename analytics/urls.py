@@ -18,10 +18,10 @@ from django.contrib import admin
 from django.conf import settings
 
 urlpatterns = [
-    url(r'^suggest/',include('suggest.urls',namespace='suggest')),
+    url(r'',include('suggest.urls',namespace='suggest')),
     url(r'^admin/', admin.site.urls),
     #url(r'^o/',include('oauth2_provider.urls', namespace='oauth2_provider')),
-    url(r'ajax/',include('suggest.urls',namespace='ajax')),
+    url(r'^ajax/',include('suggest.urls',namespace='ajax')),
     #url('socialauth/', include('social.apps.django_app.urls', namespace='social')), 
     url(r'^taggit_autosuggest/', include('taggit_autosuggest.urls')),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
