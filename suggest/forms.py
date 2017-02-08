@@ -80,16 +80,16 @@ class UserProfileForm(ModelForm):
 
         widgets = {
             'first_name':forms.TextInput(
-                attrs={'id':'first-name', 'placeholder': 'Shanon','class':'form-control'}
+                attrs={'id':'first-name', 'placeholder': 'Ritu','class':'form-control'}
                 ),
             'last_name':forms.TextInput(
-                attrs={'id':'last-name','placeholder':'Morse','class':'form-control'}
+                attrs={'id':'last-name','placeholder':'Raj','class':'form-control'}
                 ),
             'username':forms.TextInput(
-                attrs={'id':'user-name','placeholder':'shanon_morse','class':'form-control'}
+                attrs={'id':'user-name','placeholder':'ritupycon','class':'form-control'}
                 ),
             'email':forms.EmailInput(
-                attrs={'id':'email','placeholder':'shanon_morse1980@myemail.com','class':'form-control'}
+                attrs={'id':'email','placeholder':'ritu31195@gmail.com','class':'form-control'}
                 ),
             'password':forms.PasswordInput(
                 attrs={'id':'password','placeholder':'*************','class':'form-control'}
