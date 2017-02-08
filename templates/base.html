@@ -71,8 +71,8 @@ font-family: 'Droid Sans', sans-serif;
             <ul class="nav navbar-nav navbar-right" style = "margin-right:75px;">
                 <li><a href="/users">Community</a></li>
                 <li><a href="/contest/all">Hackathons</a></li>
-{%if not request.user.is_anonymous%}
-     {%if request.user.userprofile%} 
+            {%if not request.user.is_anonymous%}
+                {%if request.user.userprofile%} 
                 <li class="" title = "Notifications">
                     <a role="button" class="dropdown-toggle" >
                             <i class = "fa fa-bullhorn" style = "font-size:20px;margin-right:2px;"></i><span class="badge" id = "notification_count"></span><span class = "hidden-md hidden-lg" style = "padding-left:20px;">Notifications</span>
@@ -83,21 +83,22 @@ font-family: 'Droid Sans', sans-serif;
                             <i class = "fa fa-comments" style = "font-size:20px;margin-right:2px;"></i><span class="badge" style = "color:white;background-color:#337ab7;" id = "message_count"></span><span class = "hidden-md hidden-lg" style = "padding-left:20px;">Messages</span>
                     </a>
                 </li>
-        {%endif%}
+            {%endif%}
                 <li class="dropdown" >
                     <a role="button" class="dropdown-toggle" data-toggle="dropdown"  style = "padding:0px; padding-top:8px;">
  
 
-     {%if request.user.userprofile.profile_photo%}
+                {%if request.user.userprofile.profile_photo%}
                          <img src = "/media/{{request.user.userprofile.profile_photo}}" style = "height:40px;border-radius : 25px;width:40px;" class = "hidden-xs hidden-sm"><b class="caret hidden-xs hidden-sm"></b>
-     {%else%}
+                {%else%}
+                
                 {%if request.user.profile_photo%}
                          <img src = "/media/{{request.user.profile_photo}}" style = "height:40px;border-radius : 25px;width:40px;" class = "hidden-xs hidden-sm"><b class="caret hidden-xs hidden-sm"></b>
                 {%else%}
                         <h1 style = "margin:0px;background-color:{%cycle "#4285F4" "#EA4335" "#FBBC05" "#34A853" "#888CF4"%};padding-top:5px;color:white;height:40px;width:40px;border-radius:20px;font-size:26px;text-align:center;">{{request.user.userprofile.name|capfirst|slice:":1"}}</h1>
                 {%endif%}
                 
-     {%endif%}
+            {%endif%}
                     </a>
                     <ul class="dropdown-menu hidden-xs hidden-sm">
                         <li>  <a href = "/user">Profile</a></li>
@@ -115,10 +116,10 @@ font-family: 'Droid Sans', sans-serif;
                 {%endif%}
                         <li class = "hidden-md hidden-lg" ><a href = "/contest/all">Hackathons</a>  </li>
                         <li class = "hidden-md hidden-lg" ><a href = "/accounts/logout">Logout  {{request.user.userprofile.profile_photo}}</a>  </li>
-{%else%}
+            {%else%}
             <li><a href="/accounts/login/?next={{request.path}}" class = "nav-links">Login</a></li>
 
-{%endif%}
+        {%endif%}
             </ul>
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
