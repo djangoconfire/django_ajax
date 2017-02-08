@@ -30,3 +30,7 @@ urlpatterns = [
     #For testing
     url(r'^testing/',include('suggest.urls',namespace='testing')),
 ]
+
+urlpatterns +=[
+        url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
+]

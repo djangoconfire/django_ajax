@@ -1,0 +1,36 @@
+img.vote-up
+{
+	/*max-width: 30%;*/
+	max-width:40px;
+	min-width:10px;
+	width:30px;
+	height: auto ;
+}
+img.vote-down
+{
+	/*max-width: 30%;*/
+	max-width:40px;
+	min-width:10px;
+	width:30px;
+	height: auto ;
+}
+
+.borderless td, .borderless th {
+    border: none;
+}
+
+.comment-form
+{
+	max-width: 100%;
+	max-height: 100px;
+	width: 100%;
+	height: auto;
+}
+
+.reply-form
+{
+	max-width: 100%;
+	max-height: 100px;
+	width: 100%;
+	height: auto;
+}

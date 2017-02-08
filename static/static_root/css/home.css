@@ -1,0 +1,174 @@
+#vote
+{
+	height: 20px;
+	width: 20px;
+	min-height: 10px;
+	min-width: 10px;
+	max-height: 30px;
+	max-width: 30px;
+}
+
+#lock
+{
+	height: 30px;
+	width: 30px;
+	min-height: 15px;
+	min-width: 15px;
+	max-height: 45px;
+	max-width: 45px;
+}
+#anonymousimage
+{
+  height: 40px;
+  width: 40px;
+  min-height:10px;
+  min-width:10px;
+  max-width: 50px;
+  max-height: 50px;
+  border-radius: 50%;
+}
+#userimage
+{
+  height: 40px;
+  width: 40px;
+  min-height:10px;
+  min-width:10px;
+  max-width: 50px;
+  max-height: 50px;
+  border-radius: 50%; 
+}
+#questiontitle
+{
+	float:center;
+}
+
+.imgContainer
+{
+	float:left;
+}
+
+
+.bubble img 
+{
+    float:left;
+    width:40px;
+    height:40px;
+    border:3px solid #ffffff;
+    border-radius:10px
+ }
+
+.bubble-content 
+{
+   position:relative;
+   float:left;
+   margin-left:12px;
+   max-width:800px;
+   min-width:200px;
+   padding:0px 20px;
+   border-radius:10px;
+   background-color:#FFFFFF;
+   box-shadow:1px 1px 5px rgba(0,0,0,.2);
+ }
+
+.bubble 
+{
+     margin-top:20px;
+}
+
+.point {
+   border-top:10px solid transparent;
+   border-bottom:10px solid transparent;
+          border-right: 12px solid #FFF;
+   position:absolute;
+   left:-10px;
+   top:12px;
+} 
+
+.clearfix:after {
+      visibility:hidden;
+      display:block;
+      font-size:0;
+      content: ".";
+      clear:both;
+      height:0;
+      line-height:
+      }
+
+.clearfix 
+{
+      display: inline-block;
+}
+
+* html .clearfix 
+{
+   height: 1%;
+}
+
+.left-chat-bubble{
+  background-color:#f9f9f9;
+  padding:10px;
+  border-radius:10px;
+  display:table-cell;
+ }
+  div.box {
+  border: solid 1px #CCCCCC;
+  background-color: #f9f9f9;
+  padding: 4px;
+  margin: 4px 4px 0px 4px;
+  float:left;
+}
+/*
+{# imported style attributes #}
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  outline: none;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+html { height: 101%; }
+body { background: #e3e0ef url('images/bg.png'); font-size: 62.5%; line-height: 1; font-family: Arial, sans-serif; padding-bottom: 65px; }
+
+::selection { background: #d7d0f3; }
+::-moz-selection { background: #d7d0f3; }
+::-webkit-selection { background: #d7d0f3; }
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section { display: block; }
+ol, ul { list-style: none; }
+
+blockquote, q { quotes: none; }
+blockquote:before, blockquote:after, q:before, q:after { content: ''; content: none; }
+strong { font-weight: bold; } 
+
+table { border-collapse: collapse; border-spacing: 0; }
+img { border: 0; max-width: 100%; }
+
+h1 { font-family: 'Wellfleet', 'Trebuchet MS', Tahoma, Arial, sans-serif; font-size: 2.85em; line-height: 1.6em; font-weight: normal; color: #756f8b; text-shadow: 0px 1px 1px #fff; margin-bottom: 21px; }
+
+p { font-family: Arial, Geneva, Verdana, sans-serif; font-size: 1.3em; line-height: 1.42em; margin-bottom: 12px; font-weight: normal; color: #656565; }
+
+a { color: #896dc6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* page layout structure 
+#w { display: block; width: 700px; margin: 0 auto; padding-top: 35px; }
+
+#container { 
+  display: block; 
+  width: 100%; 
+  background: #fff; 
+  padding: 14px 20px; 
+  -webkit-border-radius: 4px; 
+  -moz-border-radius: 4px; 
+  border-radius: 4px; 
+  -webkit-box-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+  -moz-box-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+  box-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+}
+*/
