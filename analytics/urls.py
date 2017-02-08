@@ -24,13 +24,13 @@ urlpatterns = [
     url(r'ajax/',include('suggest.urls',namespace='ajax')),
     #url('socialauth/', include('social.apps.django_app.urls', namespace='social')), 
     url(r'^taggit_autosuggest/', include('taggit_autosuggest.urls')),
-    url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    #url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     #url(r'^tinymce/', include('tinymce.urls')),
     
     #For testing
     url(r'^testing/',include('suggest.urls',namespace='testing')),
 ]
 
-urlpatterns +=[
-        url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
-]
+#urlpatterns +=[
+       # url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
+#]
