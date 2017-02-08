@@ -147,6 +147,7 @@ STATICFILES_DIRS =  [
      ]
 
 MEDIA_URL = "/media/"
+
 MEDIA_ROOT = os.path.join(BASE_DIR,"media")
 
 AUTH_PROFILE_MODULE = "django.contrib.auth.models.User"

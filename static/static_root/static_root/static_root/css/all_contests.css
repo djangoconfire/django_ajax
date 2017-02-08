@@ -1,0 +1,54 @@
+.active{
+   background-color:green;
+}
+.upcoming{
+   background-color:rgb(41, 142, 234);
+}
+.past{
+   background-color:rgb(81, 81, 81);
+}
+.active, .upcoming, .past{
+   text-align:center;
+   color:white;
+   padding:5px;
+}
+.contest{
+   list-style:none;
+   padding :0px;
+   margin-right:8%;
+   margin-bottom: 50px;
+   margin-top:20px;
+}
+.contest h5{
+   margin-left:20px;
+}
+.contest h3 {
+   text-align:center;
+}
+.contest h5{
+   color:black;
+   font-weight:bold;
+   font-size :1.15em;
+}
+.top{
+   height : 150px;
+   background-image : url("/static/aa.png");
+   background-color:black;
+   padding : 20px;
+}
+.contest h3{
+   color:white;
+   font-weight : bold;
+   opacity : 1.0;
+}
+
+.bottom{
+    height : 100px;
+    background-color:#ffa;
+    margin-top:-5px;
+    padding:10px;
+}
+.bottom p{
+   color:black;
+   font-size : 1.1em;
+}

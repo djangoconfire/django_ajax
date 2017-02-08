@@ -1,0 +1,80 @@
+body{
+	line-height : 1.5;
+        background-color:white;
+}
+.upper{
+}
+.navbar-inverse .navbar-nav>li>a{
+}
+.navbar-inverse .navbar-nav>li>a:hover{
+    border-bottom: 4px solid rgb(212, 63, 21);
+    color:black;
+}
+footer {
+    color: #666;
+    background: #222;
+    padding: 17px 0 18px 0;
+    border-top: 1px solid #000;
+    padding-bottom:50px;
+}
+footer a {
+    color: #999;
+}
+footer a:hover {
+    color: #efefef;
+}
+.wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -63px;
+}
+.push {
+    height: 63px;
+}
+/* not required for sticky footer; just pushes hero down a bit */
+.wrapper > .container {
+    padding-top: 60px;
+}
+.post{
+
+    margin-top:40px;
+}
+.footer-image{
+    padding-right:20px;
+    display:inline-block;
+    float:left;
+}
+.texts{
+
+    color:#dcdcdc;
+}
+.texts h4{
+    font-size:1.1em;
+}
+.author{
+    color:#7d7d7d;
+}
+footer ul>li{
+    line-height:1.7;
+    margin-left:-30px;
+}
+#bb
+{
+     border-bottom-color: -webkit-linear-gradient(left, #CF3A10 , #00325D); /* For Safari 5.1 to 6.0 */
+     border-bottom-color: -o-linear-gradient(right, #CF3A10, #00325D); /* For Opera 11.1 to 12.0 */
+     border-bottom-color: -moz-linear-gradient(right, #CF3A10, #00325D); /* For Firefox 3.6 to 15 */
+     border-bottom-color: linear-gradient(to right, #CF3A10 , #00325D);     
+}
+.nav-links:hover{
+    border-bottom : 3px solid #DB2E1C;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Droid Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Droid Sans'), local('DroidSans'), url(https://fonts.gstatic.com/s/droidsans/v6/s-BiyweUPV0v-yRb-cjciPk_vArhqVIZ0nv9q090hN8.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
